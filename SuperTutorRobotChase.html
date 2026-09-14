@@ -1,0 +1,1806 @@
+<!DOCTYPE html>
+<!-- saved from url=(0052)file:///C:/Users/joepr/Desktop/My%20Robot/index.html -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Super Tutor Robot Chase</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+html, body {
+    margin: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    background:
+        radial-gradient(circle at 15% 20%, #ff69b4 0 8%, transparent 20%),
+        radial-gradient(circle at 80% 15%, #00ffff 0 8%, transparent 20%),
+        radial-gradient(circle at 20% 85%, #7fffd4 0 8%, transparent 20%),
+        radial-gradient(circle at 85% 80%, #8a2be2 0 10%, transparent 22%),
+        linear-gradient(135deg, #f5f5dc, #ff69b4, #00ffff, #8a2be2);
+}
+
+#game {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+}
+
+#sky {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background:
+        linear-gradient(
+            135deg,
+            #ff69b4 0%,
+            #00ffff 27%,
+            #8a2be2 53%,
+            #7fffd4 76%,
+            #f5f5dc 100%
+        );
+}
+
+#road {
+    position: absolute;
+    left: 50%;
+    bottom: 0;
+    transform: translateX(-50%);
+    width: min(650px, 92vw);
+    height: 100%;
+    background:
+        repeating-linear-gradient(
+            to bottom,
+            #38384b 0px,
+            #38384b 65px,
+            #45455a 65px,
+            #45455a 130px
+        );
+    border-left: 10px solid #f5f5dc;
+    border-right: 10px solid #f5f5dc;
+    overflow: hidden;
+}
+
+#roadScroll {
+    position: absolute;
+    inset: 0;
+    background:
+        repeating-linear-gradient(
+            to bottom,
+            transparent 0px,
+            transparent 70px,
+            rgba(255,255,255,.13) 70px,
+            rgba(255,255,255,.13) 75px,
+            transparent 75px,
+            transparent 140px
+        );
+    animation: roadMove .55s linear infinite;
+}
+
+@keyframes roadMove {
+    from {
+        background-position-y: 0;
+    }
+    to {
+        background-position-y: 140px;
+    }
+}
+
+.laneLine {
+    position: absolute;
+    top: 0;
+    width: 5px;
+    height: 100%;
+    background:
+        repeating-linear-gradient(
+            to bottom,
+            white 0 55px,
+            transparent 55px 110px
+        );
+    opacity: .8;
+    animation: laneMove .55s linear infinite;
+}
+
+#line1 {
+    left: 33.33%;
+}
+
+#line2 {
+    left: 66.66%;
+}
+
+@keyframes laneMove {
+    from {
+        background-position-y: 0;
+    }
+    to {
+        background-position-y: 110px;
+    }
+}
+
+/* CLOUDS */
+
+.cloud {
+    position: absolute;
+    width: 110px;
+    height: 35px;
+    background: rgba(255,255,255,.65);
+    border-radius: 50px;
+}
+
+.cloud::before,
+.cloud::after {
+    content: "";
+    position: absolute;
+    background: inherit;
+    border-radius: 50%;
+}
+
+.cloud::before {
+    width: 45px;
+    height: 45px;
+    left: 15px;
+    top: -20px;
+}
+
+.cloud::after {
+    width: 55px;
+    height: 55px;
+    right: 10px;
+    top: -28px;
+}
+
+.cloud1 {
+    top: 12%;
+    left: 5%;
+}
+
+.cloud2 {
+    top: 25%;
+    right: 5%;
+    transform: scale(.7);
+}
+
+/* UI */
+
+#topUI {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    right: 10px;
+    z-index: 100;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    pointer-events: none;
+}
+
+.uiBox {
+    padding: 8px 12px;
+    background: rgba(25, 5, 45, .85);
+    border: 2px solid #7fffd4;
+    border-radius: 12px;
+    color: white;
+    box-shadow: 0 0 15px rgba(0,255,255,.4);
+    font-size: 13px;
+}
+
+#title {
+    font-size: 20px;
+    font-weight: bold;
+    color: #fff;
+}
+
+/* ROBOTS */
+
+.player {
+    position: absolute;
+    width: 65px;
+    height: 105px;
+    z-index: 30;
+    transition:
+        left .12s ease,
+        bottom .2s ease;
+}
+
+.robot {
+    position: absolute;
+    width: 65px;
+    height: 105px;
+}
+
+.head {
+    position: absolute;
+    left: 15px;
+    top: 2px;
+    width: 35px;
+    height: 31px;
+    background: linear-gradient(135deg,#eaffff,#7fffd4);
+    border: 3px solid #222;
+    border-radius: 10px;
+    box-shadow: 0 0 10px #00ffff;
+}
+
+.eye {
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    top: 10px;
+    background: #8a2be2;
+    border-radius: 50%;
+    box-shadow: 0 0 7px #8a2be2;
+}
+
+.eye.left {
+    left: 7px;
+}
+
+.eye.right {
+    right: 7px;
+}
+
+.antenna {
+    position: absolute;
+    width: 3px;
+    height: 10px;
+    left: 31px;
+    top: -10px;
+    background: #222;
+}
+
+.antenna::after {
+    content: "";
+    position: absolute;
+    width: 7px;
+    height: 7px;
+    left: -2px;
+    top: -5px;
+    background: #ff69b4;
+    border-radius: 50%;
+    box-shadow: 0 0 10px #ff69b4;
+}
+
+.body {
+    position: absolute;
+    left: 10px;
+    top: 36px;
+    width: 45px;
+    height: 43px;
+    background: linear-gradient(135deg,#8a2be2,#ff69b4);
+    border: 3px solid #222;
+    border-radius: 12px;
+    box-shadow: 0 0 12px #ff69b4;
+}
+
+.chest {
+    position: absolute;
+    width: 15px;
+    height: 15px;
+    left: 12px;
+    top: 11px;
+    background: #00ffff;
+    border: 2px solid white;
+    border-radius: 50%;
+    box-shadow: 0 0 10px #00ffff;
+}
+
+.arm {
+    position: absolute;
+    width: 10px;
+    height: 32px;
+    top: 39px;
+    background: #7fffd4;
+    border: 3px solid #222;
+    border-radius: 10px;
+}
+
+.arm.left {
+    left: 1px;
+    transform: rotate(10deg);
+}
+
+.arm.right {
+    right: 1px;
+    transform: rotate(-10deg);
+}
+
+.leg {
+    position: absolute;
+    width: 12px;
+    height: 28px;
+    top: 77px;
+    background: #00ffff;
+    border: 3px solid #222;
+    border-radius: 9px;
+}
+
+.leg.left {
+    left: 17px;
+}
+
+.leg.right {
+    right: 17px;
+}
+
+/* SUPERPOWERS */
+
+.power {
+    position: absolute;
+    pointer-events: none;
+    display: none;
+    z-index: -1;
+}
+
+.shield {
+    left: -15px;
+    top: -15px;
+    width: 95px;
+    height: 130px;
+    border: 4px solid #00ffff;
+    border-radius: 50%;
+    box-shadow:
+        0 0 10px #00ffff,
+        0 0 25px #00ffff,
+        inset 0 0 20px rgba(0,255,255,.35);
+    animation: shieldPulse .4s infinite alternate;
+}
+
+@keyframes shieldPulse {
+    from {
+        transform: scale(.9);
+        opacity: .6;
+    }
+    to {
+        transform: scale(1.08);
+        opacity: 1;
+    }
+}
+
+.speedPower {
+    left: -35px;
+    top: 25px;
+    width: 120px;
+    height: 75px;
+    background:
+        repeating-linear-gradient(
+            -25deg,
+            transparent 0 10px,
+            #ffff00 10px 14px,
+            transparent 14px 22px
+        );
+    filter: drop-shadow(0 0 8px #ffff00);
+    animation: speedFlash .2s linear infinite;
+}
+
+@keyframes speedFlash {
+    from {
+        transform: translateX(8px);
+    }
+    to {
+        transform: translateX(-8px);
+    }
+}
+
+.activeShield .shield {
+    display: block;
+}
+
+.activeSpeed .speedPower {
+    display: block;
+}
+
+/* POLICE */
+
+.police {
+    position: absolute;
+    width: 42px;
+    height: 65px;
+    z-index: 25;
+    display: none;
+    transition: left .2s ease;
+}
+
+.policeHead {
+    position: absolute;
+    left: 12px;
+    top: 0;
+    width: 20px;
+    height: 20px;
+    background: #ffd0a6;
+    border: 2px solid #222;
+    border-radius: 50%;
+}
+
+.policeHat {
+    position: absolute;
+    left: 9px;
+    top: -3px;
+    width: 26px;
+    height: 8px;
+    background: #111;
+    border-radius: 7px 7px 2px 2px;
+    z-index: 2;
+}
+
+.policeBody {
+    position: absolute;
+    left: 8px;
+    top: 20px;
+    width: 27px;
+    height: 40px;
+    background: linear-gradient(#2856b2,#101c5a);
+    border: 2px solid #111;
+    border-radius: 9px;
+}
+
+.badge {
+    position: absolute;
+    top: 12px;
+    left: 9px;
+    color: gold;
+    font-size: 9px;
+}
+
+/* OBSTACLES */
+
+.obstacle {
+    position: absolute;
+    width: 48px;
+    height: 48px;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 35px;
+    user-select: none;
+}
+
+.powerup {
+    font-size: 36px;
+    filter:
+        drop-shadow(0 0 7px yellow)
+        drop-shadow(0 0 15px yellow);
+    animation: powerFloat .4s infinite alternate;
+}
+
+@keyframes powerFloat {
+    from {
+        transform: scale(.9);
+    }
+    to {
+        transform: scale(1.15);
+    }
+}
+
+/* MESSAGE */
+
+#message {
+    position: absolute;
+    top: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 150;
+    padding: 10px 18px;
+    background: rgba(20,0,40,.9);
+    border: 3px solid #ff69b4;
+    border-radius: 15px;
+    display: none;
+    text-align: center;
+    font-weight: bold;
+    box-shadow: 0 0 20px #ff69b4;
+}
+
+/* SCREENS */
+
+.screen {
+    position: absolute;
+    inset: 0;
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(15,0,30,.9);
+    padding: 15px;
+}
+
+.card {
+    width: min(600px,95vw);
+    padding: 25px;
+    text-align: center;
+    background: linear-gradient(135deg,#8a2be2,#ff69b4);
+    border: 4px solid #7fffd4;
+    border-radius: 25px;
+    box-shadow: 0 0 30px #00ffff;
+}
+
+.card h1 {
+    margin-top: 0;
+    font-size: clamp(28px,6vw,48px);
+}
+
+.card p {
+    line-height: 1.5;
+}
+
+.modeButton {
+    padding: 14px 25px;
+    margin: 8px;
+    border: none;
+    border-radius: 25px;
+    font-size: 17px;
+    font-weight: bold;
+    background: #7fffd4;
+    color: #261038;
+    cursor: pointer;
+    box-shadow: 0 5px 0 #277d6b;
+}
+
+.modeButton:hover {
+    transform: translateY(-2px);
+}
+
+#gameOver {
+    display: none;
+}
+
+#powerInfo {
+    position: absolute;
+    bottom: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 100;
+    padding: 7px 12px;
+    background: rgba(0,0,0,.7);
+    border-radius: 15px;
+    border: 2px solid #ff69b4;
+    font-size: 12px;
+    text-align: center;
+    white-space: nowrap;
+}
+
+@media(max-width:600px) {
+
+    #powerInfo {
+        font-size: 9px;
+    }
+
+    .uiBox {
+        font-size: 10px;
+    }
+
+    #title {
+        font-size: 15px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div id="game">
+
+    <div id="sky"></div>
+
+    <div class="cloud cloud1"></div>
+    <div class="cloud cloud2"></div>
+
+    <div id="road">
+
+        <div id="roadScroll"></div>
+
+        <div class="laneLine" id="line1"></div>
+        <div class="laneLine" id="line2"></div>
+
+    </div>
+
+    <!-- UI -->
+
+    <div id="topUI">
+
+        <div class="uiBox">
+
+            <div id="title">
+                🤖 SUPER TUTOR CHASE
+            </div>
+
+            <span id="modeText">
+                Choose a mode
+            </span>
+
+        </div>
+
+        <div class="uiBox">
+
+            ⭐ Score:
+            <span id="score">0</span>
+
+            <br>
+
+            🚧 P1:
+            <span id="hits1">0</span>/5
+
+            <span id="p2Stats">
+                &nbsp; P2:
+                <span id="hits2">0</span>/5
+            </span>
+
+        </div>
+
+    </div>
+
+    <div id="message"></div>
+
+    <!-- POLICE -->
+
+    <div class="police" id="police1">
+
+        <div class="policeHead"></div>
+
+        <div class="policeHat"></div>
+
+        <div class="policeBody">
+            <span class="badge">★</span>
+        </div>
+
+    </div>
+
+    <div class="police" id="police2">
+
+        <div class="policeHead"></div>
+
+        <div class="policeHat"></div>
+
+        <div class="policeBody">
+            <span class="badge">★</span>
+        </div>
+
+    </div>
+
+    <!-- PLAYER 1 -->
+
+    <div class="player" id="player1">
+
+        <div class="power shield"></div>
+
+        <div class="power speedPower"></div>
+
+        <div class="robot">
+
+            <div class="antenna"></div>
+
+            <div class="head">
+
+                <div class="eye left"></div>
+                <div class="eye right"></div>
+
+            </div>
+
+            <div class="body">
+
+                <div class="chest"></div>
+
+            </div>
+
+            <div class="arm left"></div>
+            <div class="arm right"></div>
+
+            <div class="leg left"></div>
+            <div class="leg right"></div>
+
+        </div>
+
+    </div>
+
+    <!-- PLAYER 2 -->
+
+    <div class="player" id="player2">
+
+        <div class="power shield"></div>
+
+        <div class="power speedPower"></div>
+
+        <div class="robot">
+
+            <div class="antenna"></div>
+
+            <div class="head">
+
+                <div class="eye left"></div>
+                <div class="eye right"></div>
+
+            </div>
+
+            <div class="body">
+
+                <div class="chest"></div>
+
+            </div>
+
+            <div class="arm left"></div>
+            <div class="arm right"></div>
+
+            <div class="leg left"></div>
+            <div class="leg right"></div>
+
+        </div>
+
+    </div>
+
+    <div id="powerInfo">
+        ⭐ Collect stars: 🛡️ Shield protects from a crash | ⚡ Speed gives a boost
+    </div>
+
+    <!-- START -->
+
+    <div class="screen" id="startScreen">
+
+        <div class="card">
+
+            <h1>
+                🤖 Super Tutor Chase!
+            </h1>
+
+            <p>
+                You are a super-powered patient tutor robot!
+                Dodge obstacles, collect powers and escape the police!
+            </p>
+
+            <h2>
+                Choose Your Game
+            </h2>
+
+            <button class="modeButton" onclick="startGame(1)">
+                👤 1 PLAYER
+            </button>
+
+            <button class="modeButton" onclick="startGame(2)">
+                👥 2 PLAYERS
+            </button>
+
+            <div class="instructions">
+
+                <strong>PLAYER 1</strong><br>
+
+                ⬅️ ➡️ Move
+                ⬆️ Jump
+                ⬇️ Duck
+
+                <br><br>
+
+                <strong>PLAYER 2</strong><br>
+
+                A / D = Move
+                W = Jump
+                S = Duck
+
+                <br><br>
+
+                🚧 6 hits = OUT<br>
+
+                👮 Police appear after
+                <strong>1.6 seconds</strong>
+                and disappear after
+                <strong>1 second</strong>.<br>
+
+                ⭐ Collect stars for superpowers.
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- GAME OVER -->
+
+    <div class="screen" id="gameOver">
+
+        <div class="card">
+
+            <h1>
+                💥 GAME OVER!
+            </h1>
+
+            <h2 id="winnerText"></h2>
+
+            <p>
+                Final Score:
+                <strong id="finalScore">0</strong>
+            </p>
+
+            <button class="modeButton" onclick="location.reload()">
+                🔄 PLAY AGAIN
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+
+/* =========================================================
+   GAME VARIABLES
+========================================================= */
+
+const game = document.getElementById("game");
+const road = document.getElementById("road");
+
+const player1 = document.getElementById("player1");
+const player2 = document.getElementById("player2");
+
+const police1 = document.getElementById("police1");
+const police2 = document.getElementById("police2");
+
+const startScreen =
+    document.getElementById("startScreen");
+
+const gameOver =
+    document.getElementById("gameOver");
+
+const scoreText =
+    document.getElementById("score");
+
+const hits1Text =
+    document.getElementById("hits1");
+
+const hits2Text =
+    document.getElementById("hits2");
+
+const p2Stats =
+    document.getElementById("p2Stats");
+
+const modeText =
+    document.getElementById("modeText");
+
+const message =
+    document.getElementById("message");
+
+let gameRunning = false;
+
+let gameMode = 1;
+
+let score = 0;
+
+let speed = 4;
+
+let obstacleCounter = 0;
+
+let powerCounter = 0;
+
+/* Police state */
+
+let policeStarted = false;
+
+let lastTime = 0;
+
+let obstacleList = [];
+
+/* =========================================================
+   PLAYER DATA
+========================================================= */
+
+const players = [
+
+    {
+        element: player1,
+        police: police1,
+        lane: 0,
+        hits: 0,
+        alive: true,
+        jumping: false,
+        ducking: false,
+        shield: false,
+        speedPower: false,
+        speedTimer: 0
+    },
+
+    {
+        element: player2,
+        police: police2,
+        lane: 2,
+        hits: 0,
+        alive: true,
+        jumping: false,
+        ducking: false,
+        shield: false,
+        speedPower: false,
+        speedTimer: 0
+    }
+
+];
+
+/* =========================================================
+   LANE POSITION
+========================================================= */
+
+function getLaneX(lane) {
+
+    const roadRect =
+        road.getBoundingClientRect();
+
+    const laneWidth =
+        roadRect.width / 3;
+
+    return (
+        roadRect.left +
+        lane * laneWidth +
+        laneWidth / 2 -
+        32
+    );
+}
+
+/* =========================================================
+   POSITION PLAYER
+========================================================= */
+
+function positionPlayer(p) {
+
+    p.element.style.left =
+        getLaneX(p.lane) + "px";
+
+    p.element.style.bottom =
+        "55px";
+
+    p.police.style.left =
+        getLaneX(p.lane) + 12 + "px";
+
+    p.police.style.bottom =
+        "8px";
+}
+
+/* =========================================================
+   START GAME
+========================================================= */
+
+function startGame(mode) {
+
+    gameMode = mode;
+
+    gameRunning = true;
+
+    score = 0;
+
+    speed = 4;
+
+    obstacleCounter = 0;
+
+    powerCounter = 0;
+
+    policeStarted = false;
+
+    lastTime = performance.now();
+
+    startScreen.style.display = "none";
+
+    /*
+       Reset police completely.
+    */
+
+    police1.style.display = "none";
+    police2.style.display = "none";
+
+    if (mode === 1) {
+
+        player2.style.display = "none";
+
+        p2Stats.style.display = "none";
+
+        modeText.textContent =
+            "👤 1 PLAYER • Arrow Keys";
+
+    } else {
+
+        player2.style.display = "block";
+
+        p2Stats.style.display = "inline";
+
+        modeText.textContent =
+            "👥 2 PLAYER • P1 Arrows • P2 WASD";
+    }
+
+    players[0].alive = true;
+    players[0].hits = 0;
+    players[0].shield = false;
+    players[0].speedPower = false;
+
+    players[1].alive = true;
+    players[1].hits = 0;
+    players[1].shield = false;
+    players[1].speedPower = false;
+
+    players[0].lane = 0;
+    players[1].lane = 2;
+
+    players[0].element.classList.remove(
+        "activeShield",
+        "activeSpeed"
+    );
+
+    players[1].element.classList.remove(
+        "activeShield",
+        "activeSpeed"
+    );
+
+    players[0].element.style.opacity = "1";
+    players[1].element.style.opacity = "1";
+
+    positionPlayer(players[0]);
+
+    if (mode === 2) {
+        positionPlayer(players[1]);
+    }
+
+    hits1Text.textContent = "0";
+    hits2Text.textContent = "0";
+
+    /*
+       ==========================================
+       POLICE APPEAR AFTER EXACTLY 1.6 SECONDS
+       ==========================================
+    */
+
+    setTimeout(function() {
+
+        if (!gameRunning) return;
+
+        policeStarted = true;
+
+        police1.style.display = "block";
+
+        if (gameMode === 2) {
+            police2.style.display = "block";
+        }
+
+        showMessage(
+            "👮 POLICE ARE CHASING YOU!",
+            900
+        );
+
+        /*
+           ========================================
+           POLICE DISAPPEAR 1 SECOND LATER
+           ========================================
+        */
+
+        setTimeout(function() {
+
+            policeStarted = false;
+
+            police1.style.display = "none";
+            police2.style.display = "none";
+
+        }, 1000);
+
+    }, 1600);
+
+    showMessage(
+        "🏃 RUN!",
+        900
+    );
+
+    requestAnimationFrame(gameLoop);
+}
+
+/* =========================================================
+   KEYBOARD
+========================================================= */
+
+document.addEventListener(
+    "keydown",
+    function(event) {
+
+        if (!gameRunning) return;
+
+        const key =
+            event.key.toLowerCase();
+
+        /* PLAYER 1 */
+
+        if (key === "arrowleft") {
+
+            event.preventDefault();
+
+            movePlayer(0,-1);
+        }
+
+        if (key === "arrowright") {
+
+            event.preventDefault();
+
+            movePlayer(0,1);
+        }
+
+        if (key === "arrowup") {
+
+            event.preventDefault();
+
+            jumpPlayer(0);
+        }
+
+        if (key === "arrowdown") {
+
+            event.preventDefault();
+
+            duckPlayer(0);
+        }
+
+        /* PLAYER 2 */
+
+        if (gameMode === 2) {
+
+            if (key === "a") {
+                movePlayer(1,-1);
+            }
+
+            if (key === "d") {
+                movePlayer(1,1);
+            }
+
+            if (key === "w") {
+                jumpPlayer(1);
+            }
+
+            if (key === "s") {
+                duckPlayer(1);
+            }
+        }
+
+    }
+);
+
+/* =========================================================
+   MOVE PLAYER
+========================================================= */
+
+function movePlayer(index,direction) {
+
+    const p = players[index];
+
+    if (!p.alive) return;
+
+    p.lane += direction;
+
+    if (p.lane < 0) {
+        p.lane = 0;
+    }
+
+    if (p.lane > 2) {
+        p.lane = 2;
+    }
+
+    positionPlayer(p);
+}
+
+/* =========================================================
+   JUMP
+========================================================= */
+
+function jumpPlayer(index) {
+
+    const p = players[index];
+
+    if (
+        !p.alive ||
+        p.jumping
+    ) return;
+
+    p.jumping = true;
+
+    p.element.style.bottom =
+        "180px";
+
+    setTimeout(function() {
+
+        p.element.style.bottom =
+            "55px";
+
+    },350);
+
+    setTimeout(function() {
+
+        p.jumping = false;
+
+    },600);
+}
+
+/* =========================================================
+   DUCK
+========================================================= */
+
+function duckPlayer(index) {
+
+    const p = players[index];
+
+    if (
+        !p.alive ||
+        p.ducking
+    ) return;
+
+    p.ducking = true;
+
+    p.element.style.transform =
+        "scaleY(.6)";
+
+    setTimeout(function() {
+
+        p.element.style.transform =
+            "scaleY(1)";
+
+        p.ducking = false;
+
+    },650);
+}
+
+/* =========================================================
+   CREATE OBSTACLE
+========================================================= */
+
+function createObstacle() {
+
+    const obstacle =
+        document.createElement("div");
+
+    obstacle.className =
+        "obstacle";
+
+    const things = [
+        "🚧",
+        "🪨",
+        "📦",
+        "🚗",
+        "🚌"
+    ];
+
+    obstacle.textContent =
+        things[
+            Math.floor(
+                Math.random() *
+                things.length
+            )
+        ];
+
+    const lane =
+        Math.floor(
+            Math.random() * 3
+        );
+
+    obstacle.dataset.lane =
+        lane;
+
+    obstacle.style.left =
+        getLaneX(lane) + 8 + "px";
+
+    obstacle.style.top =
+        "-60px";
+
+    game.appendChild(obstacle);
+
+    obstacleList.push(obstacle);
+}
+
+/* =========================================================
+   CREATE POWER
+========================================================= */
+
+function createPower() {
+
+    const power =
+        document.createElement("div");
+
+    power.className =
+        "obstacle powerup";
+
+    power.textContent =
+        "⭐";
+
+    const lane =
+        Math.floor(
+            Math.random() * 3
+        );
+
+    power.dataset.lane =
+        lane;
+
+    power.dataset.power =
+        "true";
+
+    power.style.left =
+        getLaneX(lane) + 8 + "px";
+
+    power.style.top =
+        "-60px";
+
+    game.appendChild(power);
+
+    obstacleList.push(power);
+}
+
+/* =========================================================
+   COLLISION
+========================================================= */
+
+function touching(a,b) {
+
+    const r1 =
+        a.getBoundingClientRect();
+
+    const r2 =
+        b.getBoundingClientRect();
+
+    return (
+        r1.left < r2.right &&
+        r1.right > r2.left &&
+        r1.top < r2.bottom &&
+        r1.bottom > r2.top
+    );
+}
+
+/* =========================================================
+   HIT PLAYER
+========================================================= */
+
+function hitPlayer(p) {
+
+    if (!p.alive) return;
+
+    if (p.shield) {
+
+        p.shield = false;
+
+        p.element.classList.remove(
+            "activeShield"
+        );
+
+        showMessage(
+            "🛡️ SHIELD BLOCKED THE CRASH!",
+            1000
+        );
+
+        return;
+    }
+
+    p.hits++;
+
+    if (p === players[0]) {
+
+        hits1Text.textContent =
+            p.hits;
+
+    } else {
+
+        hits2Text.textContent =
+            p.hits;
+    }
+
+    p.element.style.filter =
+        "brightness(3)";
+
+    setTimeout(function() {
+
+        p.element.style.filter =
+            "";
+
+    },200);
+
+    /*
+       6th hit = OUT
+    */
+
+    if (p.hits >= 6) {
+
+        p.alive = false;
+
+        p.element.style.opacity =
+            ".35";
+
+        showMessage(
+            "💥 ROBOT OUT!",
+            1000
+        );
+
+        checkGameOver();
+    }
+}
+
+/* =========================================================
+   POWER-UP
+========================================================= */
+
+function collectPower(p) {
+
+    const type =
+        Math.random() < .5
+        ? "shield"
+        : "speed";
+
+    if (type === "shield") {
+
+        p.shield = true;
+
+        p.element.classList.add(
+            "activeShield"
+        );
+
+        showMessage(
+            "🛡️ SHIELD POWER ACTIVATED!",
+            1200
+        );
+
+        setTimeout(function() {
+
+            p.shield = false;
+
+            p.element.classList.remove(
+                "activeShield"
+            );
+
+        },6000);
+
+    } else {
+
+        p.speedPower = true;
+
+        p.speedTimer = 5000;
+
+        p.element.classList.add(
+            "activeSpeed"
+        );
+
+        showMessage(
+            "⚡ SUPER SPEED ACTIVATED!",
+            1200
+        );
+    }
+}
+
+/* =========================================================
+   UPDATE OBJECTS
+========================================================= */
+
+function updateObjects(delta) {
+
+    const movement =
+        speed * (delta / 16);
+
+    for (
+        let i = obstacleList.length - 1;
+        i >= 0;
+        i--
+    ) {
+
+        const object =
+            obstacleList[i];
+
+        if (!object.parentElement) {
+
+            obstacleList.splice(i,1);
+
+            continue;
+        }
+
+        let top =
+            parseFloat(
+                object.style.top
+            );
+
+        top += movement;
+
+        object.style.top =
+            top + "px";
+
+        if (
+            top >
+            window.innerHeight + 100
+        ) {
+
+            object.remove();
+
+            obstacleList.splice(i,1);
+
+            continue;
+        }
+
+        players.forEach(function(p) {
+
+            if (!p.alive) return;
+
+            const sameLane =
+                Number(
+                    object.dataset.lane
+                ) === p.lane;
+
+            if (
+                sameLane &&
+                touching(
+                    p.element,
+                    object
+                )
+            ) {
+
+                if (
+                    object.dataset.power ===
+                    "true"
+                ) {
+
+                    collectPower(p);
+
+                } else {
+
+                    if (!p.jumping) {
+
+                        hitPlayer(p);
+                    }
+                }
+
+                object.remove();
+
+                obstacleList.splice(i,1);
+            }
+
+        });
+
+    }
+}
+
+/* =========================================================
+   POLICE
+========================================================= */
+
+function updatePolice(delta) {
+
+    /*
+       Police only move while the
+       1-second chase is active.
+    */
+
+    if (!policeStarted) return;
+
+    players.forEach(function(p) {
+
+        if (!p.alive) return;
+
+        p.police.style.left =
+            getLaneX(p.lane) +
+            12 +
+            "px";
+
+        let bottom =
+            parseFloat(
+                p.police.style.bottom
+            );
+
+        if (isNaN(bottom)) {
+            bottom = 8;
+        }
+
+        bottom +=
+            0.015 * delta;
+
+        if (bottom > 90) {
+            bottom = 90;
+        }
+
+        p.police.style.bottom =
+            bottom + "px";
+
+    });
+}
+
+/* =========================================================
+   GAME OVER CHECK
+========================================================= */
+
+function checkGameOver() {
+
+    if (gameMode === 1) {
+
+        if (!players[0].alive) {
+
+            endGame(
+                "Player 1 is OUT! 🤖"
+            );
+        }
+
+        return;
+    }
+
+    if (
+        !players[0].alive &&
+        !players[1].alive
+    ) {
+
+        endGame(
+            "Both robots are OUT! 🤖🤖"
+        );
+    }
+}
+
+/* =========================================================
+   GAME LOOP
+========================================================= */
+
+function gameLoop(time) {
+
+    if (!gameRunning) return;
+
+    const delta =
+        Math.min(
+            time - lastTime,
+            50
+        );
+
+    lastTime = time;
+
+    score +=
+        delta * .01;
+
+    scoreText.textContent =
+        Math.floor(score);
+
+    obstacleCounter += delta;
+
+    if (
+        obstacleCounter >
+        Math.max(
+            400,
+            900 - score * 2
+        )
+    ) {
+
+        createObstacle();
+
+        obstacleCounter = 0;
+    }
+
+    powerCounter += delta;
+
+    if (powerCounter > 5000) {
+
+        createPower();
+
+        powerCounter = 0;
+    }
+
+    speed =
+        4 +
+        Math.min(
+            score / 250,
+            7
+        );
+
+    players.forEach(function(p) {
+
+        if (p.speedPower) {
+
+            p.speedTimer -=
+                delta;
+
+            if (
+                p.speedTimer <= 0
+            ) {
+
+                p.speedPower =
+                    false;
+
+                p.element.classList.remove(
+                    "activeSpeed"
+                );
+            }
+        }
+
+    });
+
+    updateObjects(delta);
+
+    updatePolice(delta);
+
+    requestAnimationFrame(
+        gameLoop
+    );
+}
+
+/* =========================================================
+   MESSAGE
+========================================================= */
+
+function showMessage(
+    text,
+    duration
+) {
+
+    message.textContent =
+        text;
+
+    message.style.display =
+        "block";
+
+    clearTimeout(
+        showMessage.timer
+    );
+
+    showMessage.timer =
+        setTimeout(function() {
+
+            message.style.display =
+                "none";
+
+        },duration);
+}
+
+/* =========================================================
+   GAME OVER
+========================================================= */
+
+function endGame(text) {
+
+    gameRunning = false;
+
+    policeStarted = false;
+
+    police1.style.display =
+        "none";
+
+    police2.style.display =
+        "none";
+
+    document
+        .querySelectorAll(".obstacle")
+        .forEach(function(o) {
+
+            o.remove();
+
+        });
+
+    obstacleList = [];
+
+    document.getElementById(
+        "winnerText"
+    ).textContent =
+        text;
+
+    document.getElementById(
+        "finalScore"
+    ).textContent =
+        Math.floor(score);
+
+    gameOver.style.display =
+        "flex";
+}
+
+/* =========================================================
+   RESIZE
+========================================================= */
+
+window.addEventListener(
+    "resize",
+    function() {
+
+        if (!gameRunning) return;
+
+        positionPlayer(
+            players[0]
+        );
+
+        if (gameMode === 2) {
+
+            positionPlayer(
+                players[1]
+            );
+        }
+
+    }
+);
+
+</script>
+
+
+</body></html>
